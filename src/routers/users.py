@@ -1,0 +1,43 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from typing import List
+
+from ..config.session import get_db
+from ..crud import crud_user
+from ..schema import schemas_user
+
+router = APIRouter(
+    prefix="",
+    tags=["users"]
+)
+
+@router.post("/", status_code=201 ,response_model= schemas_user.User)
+async def create_user(user: schemas_user.User, db: Session = Depends(get_db)):
+    db_user = crud_user.get_user_by_email(db, email=user.email)
+    if db_user: 
+        raise HTTPException(status_code=400, detail="Email alredy exist")
+    return crud_user.create_user(db=db, user=user)
+
+@router.get("/", response_model=List[schemas_user.User])
+async def get_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    users = crud_user.get_users(db, skip= skip, limit=limit)
+    return users
+
+@router.get("/{user_id}", response_model=schemas_user.User)
+async def get_by_user(user_id: int, db: Session = Depends(get_db)):
+    db_user = crud_user.get_by_user(db, user_id=user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User Not found")
+    return db_user
+
+@router.delete("/{user_id}")
+async def delete_user(user_id: int, db: Session = Depends(get_db)):
+    db_user = crud_user.get_by_user(db, user_id=user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User Not found")
+    response = crud_user.delete_user(db=db,user_id=user_id)
+    if response:
+       message = "Delete Row" 
+    else:
+       message = "Error deleting Row"    
+    return {"detail": message}
