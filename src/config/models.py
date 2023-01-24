@@ -14,6 +14,9 @@ class User(Base):
     type = Column('type',Enum("admin", "delegate"), default="admin")
     master_id = Column(Integer)  
 
+    country = Column(String(10))
+    currency = Column(String(10))
+
     expenses = relationship("Expenses",back_populates="user_name")
 
 class Category(Base):
@@ -23,6 +26,7 @@ class Category(Base):
     description = Column(String(100))       
     type = Column(Enum("fixed", "flex","other"),default="other")   
 
+    id_user = Column(Integer, ForeignKey("users.id"))
     expenses = relationship("Expenses",back_populates="category_name")
 
 class Expenses(Base):

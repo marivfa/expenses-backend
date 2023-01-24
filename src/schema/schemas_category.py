@@ -16,8 +16,10 @@ class TypeCatEnum(str, Enum):
 class Category(CategoryBase):
     description : str      
     type : TypeCatEnum
+    id_user : int
 
 class CategoryList(CategoryBase):
     id: int
     description : str      
     type : TypeCatEnum
+    id_user : int

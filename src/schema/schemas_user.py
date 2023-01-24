@@ -21,3 +21,13 @@ class User(UserBase):
     active : ActiveEnum
     type : TypeEnum
     master_id : int
+    country : str | None
+    currency : str | None
+
+
+class UserUpdate(UserBase):
+    name : str
+   # active : ActiveEnum
+    country : str | None
+    currency : str | None
+
