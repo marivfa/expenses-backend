@@ -23,3 +23,14 @@ def delete_user(db:Session, user_id: int):
     row_count = db.query(models.User).filter(models.User.id == user_id).delete()
     db.commit()
     return row_count
+
+def update_user(db: Session, users: schemas_user.UserUpdate,user_id = int):
+    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    db_user.name = users.name
+    db_user.country = users.country
+    db_user.currency = users.currency
+    db_user.id = user_id
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user

@@ -6,6 +6,8 @@ from ..config.session import get_db
 from ..crud import crud_category
 from ..schema import schemas_category
 
+from ..auth.auth import get_current_user
+
 router = APIRouter(
     prefix="",
     tags=["category"]
@@ -14,13 +16,13 @@ router = APIRouter(
 
 ##Category 
 @router.post("/", status_code=201 ,response_model=schemas_category.Category)
-async def create_category(category: schemas_category.Category, db: Session = Depends(get_db)):
-    db_category = crud_category.create_category(db=db, category=category)
+async def create_category(category: schemas_category.Category, db: Session = Depends(get_db), id_user: int = Depends(get_current_user)):
+    db_category = crud_category.create_category(db=db, category=category, id_user = id_user)
     return db_category
 
 @router.get("/", response_model=List[schemas_category.CategoryList])
-async def get_category(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    category = crud_category.get_category(db, skip= skip, limit=limit)
+async def get_category(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), id_user: int = Depends(get_current_user)):
+    category = crud_category.get_category(db, skip= skip, limit=limit, id_user = id_user)
     return category
 
 @router.get("/{category_id}", response_model=schemas_category.Category)
