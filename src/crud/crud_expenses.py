@@ -11,7 +11,7 @@ from ..auth.auth import get_current_user
 ##Expenses
 def get_by_expenses(db: Session, expenses_id: int):
     ##return db.query(Expenses).filter(Expenses.id == expenses_id).first()
-    return db.query(Expenses.id,Expenses.amount, Expenses.date_register, Expenses.id_category, Expenses.id_user, Category.description.label('category'))\
+    return db.query(Expenses.id,Expenses.amount, Expenses.date_register, Expenses.id_category, Expenses.id_user, Category.description.label('category'), Expenses.comment, Expenses.real_date)\
             .join(Category, Expenses.id_category == Category.id)\
             .filter(Expenses.id == expenses_id).first()
 

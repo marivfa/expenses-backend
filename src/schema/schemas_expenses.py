@@ -36,3 +36,6 @@ class ExpensesUpdate(ExpensesBase):
     category: str
     id_user : int
     id_category : int
+
+    real_date : date | None
+    comment: str | None
