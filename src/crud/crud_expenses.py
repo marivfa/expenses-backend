@@ -15,12 +15,19 @@ def get_by_expenses(db: Session, expenses_id: int):
             .join(Category, Expenses.id_category == Category.id)\
             .filter(Expenses.id == expenses_id).first()
 
-def get_expenses(db: Session, skip: int = 0, limit: int = 25, id_user: int = 0):
-    return  db.query(Expenses.id,Expenses.amount, Expenses.date_register, Expenses.id_category, Expenses.real_date, Expenses.comment, Expenses.id_user, User.name.label('user'), Category.description.label('category'))\
-            .join(User, Expenses.id_user == User.id)\
-            .join(Category, Expenses.id_category == Category.id)\
-            .filter(Expenses.id_user == id_user)\
-            .order_by(Expenses.real_date.desc()).all() #.offset(skip).limit(limit)
+def get_expenses(db: Session, skip: int = 0, limit: int = 25, id_user: int = 0, download: str = ''):
+    if download == 'xls':
+        return  db.query(User.name.label('User'),Category.description.label('Category'), Expenses.amount, Expenses.comment, Expenses.date_register, Expenses.real_date)\
+                .join(User, Expenses.id_user == User.id)\
+                .join(Category, Expenses.id_category == Category.id)\
+                .filter(Expenses.id_user == id_user)\
+                .order_by(Expenses.real_date.desc()).all()
+    else:    
+        return  db.query(Expenses.id,Expenses.amount, Expenses.date_register, Expenses.id_category, Expenses.real_date, Expenses.comment, Expenses.id_user, User.name.label('user'), Category.description.label('category'))\
+                .join(User, Expenses.id_user == User.id)\
+                .join(Category, Expenses.id_category == Category.id)\
+                .filter(Expenses.id_user == id_user)\
+                .order_by(Expenses.real_date.desc()).all()
 
 def create_expenses(db: Session, expenses: schemas_expenses.Expenses, id_user = int):
     db_expenses = Expenses(amount = expenses.amount, real_date = expenses.real_date, comment = expenses.comment, id_category = expenses.id_category, id_user = id_user)

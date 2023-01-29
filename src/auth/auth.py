@@ -6,6 +6,7 @@ from fastapi import Depends, HTTPException
 from starlette.status import HTTP_403_FORBIDDEN
 
 from .JWTBearer import JWKS, JWTBearer, JWTAuthorizationCredentials
+import boto3
 
 from sqlalchemy.orm import Session
 from src.crud import crud_user
@@ -31,3 +32,6 @@ async def get_current_user(credentials: JWTAuthorizationCredentials = Depends(au
         return db_user.id
     except KeyError:
         HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Username missing")
+
+def aws_session():
+    return boto3.Session(aws_access_key_id= os.environ.get('ACCESS_KEY'), aws_secret_access_key=os.environ.get('ACCESS_SECRET_KEY'), region_name=os.environ.get('COGNITO_REGION'))

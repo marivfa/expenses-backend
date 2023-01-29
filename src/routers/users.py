@@ -14,11 +14,11 @@ router = APIRouter(
 )
 
 @router.post("/", status_code=201 ,response_model= schemas_user.User)
-async def create_user(user: schemas_user.User, db: Session = Depends(get_db)):
+async def create_user(user: schemas_user.User, db: Session = Depends(get_db), user_id: int = Depends(get_current_user)):
     db_user = crud_user.get_user_by_email(db, email=user.email)
     if db_user: 
         raise HTTPException(status_code=400, detail="Email alredy exist")
-    return crud_user.create_user(db=db, user=user)
+    return crud_user.create_user(db=db, user=user, user_id = user_id)
 
 @router.get("/", response_model=List[schemas_user.User])
 async def get_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -26,7 +26,7 @@ async def get_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_d
     return users
 
 @router.get("/me", response_model=schemas_user.User)
-async def get_profile(db: Session = Depends(get_db), user_id: str = Depends(get_current_user)):
+async def get_profile(db: Session = Depends(get_db), user_id: int = Depends(get_current_user)):
     db_user = crud_user.get_by_user(db, user_id=user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User Not found")
@@ -52,6 +52,6 @@ async def delete_user(user_id: int, db: Session = Depends(get_db)):
     return {"detail": message}
 
 @router.put("/me",response_model=schemas_user.User)
-async def update_user(user: schemas_user.UserUpdate, user_id: str = Depends(get_current_user) , db: Session = Depends(get_db)):
+async def update_user(user: schemas_user.UserUpdate, user_id: int = Depends(get_current_user) , db: Session = Depends(get_db)):
     db_users = crud_user.update_user(db, users = user, user_id = user_id)
     return db_users

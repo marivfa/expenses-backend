@@ -26,8 +26,8 @@ class User(UserBase):
 
 
 class UserUpdate(UserBase):
-    name : str
-   # active : ActiveEnum
     country : str | None
     currency : str | None
+    # name : str | None
+    # active : ActiveEnum
 
