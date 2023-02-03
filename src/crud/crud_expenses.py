@@ -5,8 +5,7 @@ from datetime import datetime
 
 from ..config.models import Expenses, User, Category
 from ..schema import schemas_expenses
-
-from ..auth.auth import get_current_user
+from ..crud import crud_user
 
 ##Expenses
 def get_by_expenses(db: Session, expenses_id: int):
@@ -15,18 +14,19 @@ def get_by_expenses(db: Session, expenses_id: int):
             .join(Category, Expenses.id_category == Category.id)\
             .filter(Expenses.id == expenses_id).first()
 
-def get_expenses(db: Session, skip: int = 0, limit: int = 25, id_user: int = 0, download: str = ''):
+def get_expenses(db: Session, skip: int = 0, limit: int = 25, id_user: int = 0, download: str = ''):    
+    filter_users = crud_user.get_related_users(db, id_user)   
     if download == 'xls':
         return  db.query(User.name.label('User'),Category.description.label('Category'), Expenses.amount, Expenses.comment, Expenses.date_register, Expenses.real_date)\
                 .join(User, Expenses.id_user == User.id)\
                 .join(Category, Expenses.id_category == Category.id)\
-                .filter(Expenses.id_user == id_user)\
+                .filter(Expenses.id_user.in_(filter_users))\
                 .order_by(Expenses.real_date.desc()).all()
     else:    
-        return  db.query(Expenses.id,Expenses.amount, Expenses.date_register, Expenses.id_category, Expenses.real_date, Expenses.comment, Expenses.id_user, User.name.label('user'), Category.description.label('category'))\
-                .join(User, Expenses.id_user == User.id)\
+        return  db.query(Expenses.id,Expenses.amount, Expenses.date_register, Expenses.id_category, Expenses.real_date, Expenses.comment, Expenses.id_user, User.type, User.name.label('user'), Category.description.label('category'))\
+                .join(User, Expenses.id_user == User.id )\
                 .join(Category, Expenses.id_category == Category.id)\
-                .filter(Expenses.id_user == id_user)\
+                .filter(Expenses.id_user.in_(filter_users))\
                 .order_by(Expenses.real_date.desc()).all()
 
 def create_expenses(db: Session, expenses: schemas_expenses.Expenses, id_user = int):
@@ -53,34 +53,39 @@ def update_expenses(db: Session, expenses_id: int, expenses: schemas_expenses.Ex
 
 #Dashboard 
 def get_expenses_monthly(db: Session, id_user: int):
+    filter_users = crud_user.get_related_users(db, id_user)
     current_time = datetime.now()
     return db.query(func.ifnull(func.round(func.avg(Expenses.amount),2),0).label('average'), func.ifnull(func.round(func.sum(Expenses.amount),2),0).label('total'))\
-        .filter(func.year(Expenses.real_date) == func.year(current_time), func.month(Expenses.real_date) == func.month(current_time), Expenses.id_user == id_user)\
-        .first()
+          .filter(func.year(Expenses.real_date) == func.year(current_time), func.month(Expenses.real_date) == func.month(current_time), Expenses.id_user.in_(filter_users))\
+          .first()
 
 def get_total_expenses_annual(db: Session, id_user: int):
+    filter_users = crud_user.get_related_users(db, id_user)
     current_time = datetime.now()
     return db.query(func.ifnull(func.sum(Expenses.amount),0).label('total'))\
-        .filter(func.year(Expenses.real_date) == func.year(current_time), func.month(Expenses.real_date) == func.month(current_time), Expenses.id_user == id_user)\
-        .first()
+           .filter(func.year(Expenses.real_date) == func.year(current_time), Expenses.id_user.in_(filter_users))\
+           .first()
 
 def get_expenses_by_category(db: Session, id_user: int):
     #current_time = datetime.now()
+    filter_users = crud_user.get_related_users(db, id_user)
     return db.query(Category.description.label('category'), func.ifnull(func.sum(Expenses.amount),0).label('amount'))\
            .join(Category, Expenses.id_category == Category.id)\
-           .filter(Expenses.id_user == id_user)\
+           .filter(Expenses.id_user.in_(filter_users))\
            .group_by(Category.id)\
            .order_by(Expenses.amount.desc())
 
 def get_expenses_by_type(db: Session,id_user: int):
     #current_time = datetime.now()
+    filter_users = crud_user.get_related_users(db, id_user)
     return db.query(Category.type, func.ifnull(func.sum(Expenses.amount),0).label('amount'))\
            .join(Category, Expenses.id_category == Category.id)\
-           .filter(Expenses.id_user == id_user)\
+           .filter(Expenses.id_user.in_(filter_users))\
            .group_by(Category.type)
 
 def get_expenses_by_month(db: Session,id_user: int):
     #current_time = datetime.now()
+    filter_users = crud_user.get_related_users(db, id_user)
     return db.query((func.year(Expenses.real_date) +"-"+ func.month(Expenses.real_date)).label('Date'), func.ifnull(func.sum(Expenses.amount),0).label('amount'))\
-           .filter(Expenses.id_user == id_user)\
+           .filter(Expenses.id_user.in_(filter_users))\
            .group_by(func.year(Expenses.real_date),func.month(Expenses.real_date)).all()

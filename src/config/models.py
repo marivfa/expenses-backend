@@ -12,11 +12,12 @@ class User(Base):
     email = Column(String(150), unique=True, index=True)
     active = Column('active',Enum("Y", "N"), default="Y")
     type = Column('type',Enum("admin", "delegate"), default="admin")
-    master_id = Column(Integer)  
+    master_id = Column(Integer, ForeignKey('users.id'), nullable=True)
 
     country = Column(String(10))
     currency = Column(String(10))
 
+    children = relationship("User", backref="parent", remote_side=[id])
     expenses = relationship("Expenses",back_populates="user_name")
 
 class Category(Base):

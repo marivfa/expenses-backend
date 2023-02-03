@@ -23,6 +23,7 @@ class User(UserBase):
     master_id : int
     country : str | None
     currency : str | None
+    password : str | None
 
 
 class UserUpdate(UserBase):

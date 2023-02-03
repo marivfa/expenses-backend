@@ -23,3 +23,5 @@ class CategoryList(CategoryBase):
     description : str      
     type : TypeCatEnum
     id_user : int
+    type_user : str | None
+    name_user : str | None

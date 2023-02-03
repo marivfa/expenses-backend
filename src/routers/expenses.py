@@ -1,15 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field
 from fastapi_pagination import LimitOffsetPage, add_pagination, paginate
 from sqlalchemy.orm import Session
 import pandas as pd
+import os
 
 from ..config.session import get_db
 from ..crud import crud_expenses, crud_remainders
 from ..schema import schemas_expenses
 
+from dotenv import load_dotenv
+
 from ..auth.auth import get_current_user, aws_session
+
+load_dotenv()
 
 router = APIRouter(
     prefix="",
@@ -46,11 +49,11 @@ async def get_data_excel(db: Session = Depends(get_db), id_user: str = Depends(g
     s3_resource = session.client('s3')
 
     try:
-        s3_resource.upload_file(file_name,'expenses-app-bucket',file_name)
+        s3_resource.upload_file(file_name,os.environ.get('S3_NAME'),file_name)
     except Exception as e:
         raise HTTPException(status_code=404, detail="Error uploading file: "+str(e))
 
-    return {'url': f"https://expenses-app-bucket.s3.amazonaws.com/{file_name}"} 
+    return {'url': f"{os.environ.get('S3_URL')}{file_name}"} 
 
 @router.get("/{expenses_id}", response_model=schemas_expenses.ExpensesUpdate)
 async def get_by_expenses(expenses_id: int, db: Session = Depends(get_db)):

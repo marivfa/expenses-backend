@@ -30,6 +30,7 @@ class ExpensesList(ExpensesBase):
     comment: str | None
     category: str
     user: str
+    type : str
 
 class ExpensesUpdate(ExpensesBase):
     amount : float
