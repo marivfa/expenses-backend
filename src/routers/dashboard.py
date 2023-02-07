@@ -28,15 +28,32 @@ async def get_expenses_resume(db: Session = Depends(get_db), id_user: int = Depe
 
 @router.get("/by_month")
 async def get_expenses_by_month(db: Session = Depends(get_db),id_user: int = Depends(get_current_user)):
-    db_expenses = crud_expenses.get_expenses_by_month(db,id_user)
-    return db_expenses
+    try:
+        db_expenses = crud_expenses.get_expenses_by_month(db,id_user)
+        expenses = [{"date": e[0], "amount": e[1]} for e in db_expenses]
+        return {"status": True, "data": expenses}
+    except Exception as e:
+        print(f"Failed to retrieve expenses: {e}")
+        return {"status": False, "message": "Failed to retrieve expenses by month"}
 
 @router.get("/by_category")
 async def get_expenses_by_category(db: Session = Depends(get_db),id_user: int = Depends(get_current_user)):
-    db_expenses = crud_expenses.get_expenses_by_category(db,id_user)
-    return db_expenses
+    try:
+        db_expenses = crud_expenses.get_expenses_by_category(db,id_user)
+        expenses = [{"category": e[0], "amount": e[1]} for e in db_expenses]
+        return {"status": True, "data": expenses}
+    except Exception as e:
+        print(f"Failed to retrieve expenses: {e}")
+        return {"status": False, "message": "Failed to retrieve expenses by category"}
+
 
 @router.get("/by_type")
 async def get_expenses_by_type(db: Session = Depends(get_db),id_user: int = Depends(get_current_user)):
-    db_expenses = crud_expenses.get_expenses_by_type(db,id_user)
-    return db_expenses
+    try:
+        db_expenses = crud_expenses.get_expenses_by_type(db,id_user)
+        expenses = [{"type": e[0], "value": e[1]} for e in db_expenses]
+        return {"status": True, "data": expenses}
+    except Exception as e:
+        print(f"Failed to retrieve expenses: {e}")
+        return {"status": False, "message": "Failed to retrieve expenses by type"}
+

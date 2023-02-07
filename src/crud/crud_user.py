@@ -88,35 +88,6 @@ def create_cognito_user(user):
         raise ValueError("Invalid parameter value: %s" % e)
     except botocore.exceptions.ClientError as e:
         raise Exception("AWS service error: %s" % e)
-
-    """
-    print(response,"1111")
-    response = resource.admin_initiate_auth(
-        UserPoolId=os.environ.get('COGNITO_POOL_ID'),
-        ClientId=os.environ.get('COGNITO_CLIENTID'),
-        AuthFlow='USER_PASSWORD_AUTH',
-        AuthParameters={
-            'USERNAME': user.email,
-            'NEW_PASSWORD' : user.password
-        }
-    )
-    session = response['Session']
-
-    print(response,"2222")
-
-    response = resource.admin_respond_to_auth_challenge(
-        UserPoolId = os.environ.get('COGNITO_POOL_ID'),
-        ClientId=os.environ.get('COGNITO_CLIENTID'),
-        ChallengeName= 'NEW_PASSWORD_REQUIRED',
-        ChallengeResponses={
-            'USERNAME': user.email,
-            'NEW_PASSWORD' : user.password
-        },
-        Session=session
-    )
-    print(response,"33333")
-    """
-
     return response
 
 def get_related_users(db: Session, id_user: int):

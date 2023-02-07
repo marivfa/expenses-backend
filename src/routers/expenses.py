@@ -49,11 +49,11 @@ async def get_data_excel(db: Session = Depends(get_db), id_user: str = Depends(g
     s3_resource = session.client('s3')
 
     try:
-        s3_resource.upload_file(file_name,os.environ.get('S3_NAME'),file_name)
+        s3_resource.upload_file(file_name,os.environ.get('S3_NAME'),f"public/{file_name}")
     except Exception as e:
         raise HTTPException(status_code=404, detail="Error uploading file: "+str(e))
 
-    return {'url': f"{os.environ.get('S3_URL')}{file_name}"} 
+    return {'url': f"{file_name}"} 
 
 @router.get("/{expenses_id}", response_model=schemas_expenses.ExpensesUpdate)
 async def get_by_expenses(expenses_id: int, db: Session = Depends(get_db)):
