@@ -11,6 +11,7 @@ from ..crud import crud_user
 # Expenses
 YEAR = func.year(Expenses.real_date)
 MONTH = func.month(Expenses.real_date)
+current_time = datetime.now()
 
 
 def get_by_expenses(db: Session, expenses_id: int):
@@ -64,15 +65,18 @@ def update_expenses(db: Session, expenses_id: int, expenses: schemas_expenses.Ex
 # Dashboard
 def get_expenses_monthly(db: Session, id_user: int):
     filter_users = crud_user.get_related_users(db, id_user)
-    current_time = datetime.now()
-    return db.query(func.ifnull(func.round(func.avg(Expenses.amount), 2), 0).label('average'), func.ifnull(func.round(func.sum(Expenses.amount), 2), 0).label('total'))\
+    return db.query(func.ifnull(func.round(func.sum(Expenses.amount), 2), 0).label('total'))\
         .filter(YEAR == func.year(current_time), MONTH == func.month(current_time), Expenses.id_user.in_(filter_users))\
         .first()
 
+def get_expenses_avg(db: Session, id_user: int):
+    filter_users = crud_user.get_related_users(db, id_user)
+    return db.query(func.ifnull(func.round(func.avg(Expenses.amount), 2), 0).label('average'))\
+        .filter(YEAR == func.year(current_time), Expenses.id_user.in_(filter_users))\
+        .first()
 
 def get_total_expenses_annual(db: Session, id_user: int):
     filter_users = crud_user.get_related_users(db, id_user)
-    current_time = datetime.now()
     return db.query(func.ifnull(func.sum(Expenses.amount), 0).label('total'))\
         .filter(YEAR == func.year(current_time), Expenses.id_user.in_(filter_users))\
         .first()
@@ -104,10 +108,9 @@ def get_expenses_by_type(db: Session, id_user: int):
 
 
 def get_expenses_by_month(db: Session, id_user: int):
-    # current_time = datetime.now()
     filter_users = crud_user.get_related_users(db, id_user)
     try:
-        return db.query((func.year(Expenses.real_date) +"-"+ func.month(Expenses.real_date)).label('Date'), YEAR.label('Year'), MONTH.label('Month'), func.ifnull(func.sum(Expenses.amount),0).label('amount'))\
+        return db.query((func.year(Expenses.real_date) +"-"+ func.month(Expenses.real_date)).label('date'), YEAR.label('Year'), MONTH.label('Month'), func.ifnull(func.sum(Expenses.amount),0).label('amount'))\
             .filter(Expenses.id_user.in_(filter_users))\
             .group_by('Year','Month').all()
     except Exception as e:

@@ -14,11 +14,6 @@ def get_category(db: Session, skip: int = 0, limit: int = 100, id_user: int = 0)
            .join(User, Category.id_user == User.id)\
            .filter(Category.id_user.in_(filter_users))\
            .offset(skip).limit(limit).all()
-    """
-    return  db.query(Category, User.type.label('type_user'), User.name.label('name_user'))\
-                .join(User, Category.id_user.in_(filter_users))\
-                .order_by(Expenses.real_date.desc()).all()
-    """
 
 def create_category(db: Session, category: schemas_category.Category, id_user = int):
     db_category = Category(**category.dict())

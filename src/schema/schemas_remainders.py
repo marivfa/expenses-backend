@@ -19,7 +19,7 @@ class Remainders(RemaindersBase):
     frecuency : FrecuencyEnum
     until_date : date
     id_user : int
-    #remainder_date: date | None
+    remainder_date: date | None
 
 class RemaindersList(RemaindersBase):
     id: int
@@ -27,5 +27,16 @@ class RemaindersList(RemaindersBase):
     description : str
     frecuency : FrecuencyEnum
     until_date : date
-    #remainder_date: date | None
+    remainder_date: date | None
     id_user : int
+
+
+class RemaindersDetailBase(BaseModel):
+    class Config:
+        orm_mode = True 
+
+class RemindersDetail(RemaindersDetailBase):
+    id: int | None
+    reminder_id : int
+    status : str | None
+    date_time : date

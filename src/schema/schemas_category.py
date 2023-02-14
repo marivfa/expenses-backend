@@ -1,5 +1,3 @@
-from typing import List, Optional
-from datetime import datetime, date
 from enum import Enum
 from pydantic import BaseModel
 
@@ -11,7 +9,7 @@ class CategoryBase(BaseModel):
 class TypeCatEnum(str, Enum):
     fixed = 'fixed'
     flex = 'flex'
-    none = 'None'
+    other = 'other'
 
 class Category(CategoryBase):
     description : str      

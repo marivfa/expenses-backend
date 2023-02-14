@@ -13,7 +13,6 @@ router = APIRouter(
     tags=["category"]
 )
 
-
 ##Category 
 @router.post("/", status_code=201 ,response_model=schemas_category.Category)
 async def create_category(category: schemas_category.Category, db: Session = Depends(get_db), id_user: int = Depends(get_current_user)):

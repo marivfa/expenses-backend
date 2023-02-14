@@ -16,10 +16,14 @@ router = APIRouter(
 async def get_expenses_resume(db: Session = Depends(get_db), id_user: int = Depends(get_current_user)):
     response = {"avg_monthly": 0, "total_annual": 0, "count_remainders":0,"expenses_monthly":0}
     db_exp_monthly = crud_expenses.get_expenses_monthly(db, id_user)
+    print(db_exp_monthly)
+    db_exp_avg = crud_expenses.get_expenses_avg(db,id_user)
     db_exp_total = crud_expenses.get_total_expenses_annual(db,id_user)
     db_rem_count = crud_remainders.count_remainders(db,id_user)
+    if db_exp_avg: 
+        response.update({"avg_monthly": db_exp_avg.average})
     if db_exp_monthly:
-        response.update({"avg_monthly": db_exp_monthly.average,"expenses_monthly": db_exp_monthly.total})
+        response.update({"expenses_monthly": db_exp_monthly.total})
     if db_exp_total:
         response.update({"total_annual": db_exp_total.total})
     if db_rem_count:
@@ -30,7 +34,7 @@ async def get_expenses_resume(db: Session = Depends(get_db), id_user: int = Depe
 async def get_expenses_by_month(db: Session = Depends(get_db),id_user: int = Depends(get_current_user)):
     try:
         db_expenses = crud_expenses.get_expenses_by_month(db,id_user)
-        expenses = [{"date": e[0], "amount": e[1]} for e in db_expenses]
+        expenses = [{"date": e.date, "amount": e.amount} for e in db_expenses]
         return {"status": True, "data": expenses}
     except Exception as e:
         print(f"Failed to retrieve expenses: {e}")
@@ -56,4 +60,15 @@ async def get_expenses_by_type(db: Session = Depends(get_db),id_user: int = Depe
     except Exception as e:
         print(f"Failed to retrieve expenses: {e}")
         return {"status": False, "message": "Failed to retrieve expenses by type"}
+    
+
+@router.get("/reminder")
+async def get_reminders_by_date(option: str = 'day', db: Session = Depends(get_db),id_user: int = Depends(get_current_user)):
+    try:
+        db_reminders = crud_remainders.get_reminders_detail(db,id_user, option=option)
+        reminders = [{"description": e.description, "user": e.user, "date_time": e.date_time, "status": e.status, "detail_id" : e.detail_id} for e in db_reminders]
+        return {"status": True, "data": reminders}
+    except Exception as e:
+        print(f"Failed to retrieve reminders: {e}")
+        return {"status": False, "message": "Failed to retrieve reminders by date"}
 

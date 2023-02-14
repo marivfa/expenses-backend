@@ -53,4 +53,11 @@ class Remainders(Base):
     frecuency = Column(Enum("daily", "weekly","monthly","annual","none"),default="none")   
     until_date = Column(Date)
     id_user = Column(Integer, ForeignKey("users.id"))
+    remainder_date = Column(Date)
 
+class RemindersDetail(Base):
+    __tablename__ = "reminders_detail"
+    id = Column(Integer, primary_key=True, index=True)
+    date_time = Column(Date, server_default=func.now())
+    status = Column(String(100))
+    reminder_id = Column(Integer, ForeignKey("remainders.id"))
