@@ -31,6 +31,8 @@ async def create_expenses(expenses: schemas_expenses.Expenses, db: Session = Dep
 @router.get("/", response_model=LimitOffsetPage[schemas_expenses.ExpensesList])
 async def get_expenses(skip: int = 0, limit: int = 25, db: Session = Depends(get_db), id_user: int = Depends(get_current_user)):
     expenses = crud_expenses.get_expenses(db, skip= skip, limit=limit, id_user = id_user)
+    if expenses is None:
+        raise HTTPException(status_code=404, detail="Reminder Not found")
     return paginate(expenses)
 add_pagination(router)
 

@@ -56,6 +56,8 @@ def update_expenses(db: Session, expenses_id: int, expenses: schemas_expenses.Ex
     db_expenses = db.query(Expenses).filter(Expenses.id == expenses_id).first()
     db_expenses.amount = expenses.amount
     db_expenses.id_category = expenses.id_category
+    db_expenses.comment = expenses.comment
+    db_expenses.real_date = expenses.real_date
     db.add(db_expenses)
     db.commit()
     db.refresh(db_expenses)

@@ -75,7 +75,7 @@ def update_remainders(db: Session, remainders_id: int, remainder: schemas_remain
     return db_remainder
 
 #Dashboard
-def get_reminders_detail(db: Session, id_user = int, option = str):
+def get_reminders_detail(db: Session, id_user = int, option = str, reminders_id = int):
     current_time = datetime.now().date()
     current_week_start = current_time - timedelta(days=current_time.weekday())
     current_week_end = current_week_start + timedelta(days=6)
@@ -102,6 +102,12 @@ def get_reminders_detail(db: Session, id_user = int, option = str):
             .outerjoin(RemindersDetail, Remainders.id == RemindersDetail.reminder_id)\
             .join(User, Remainders.id_user == User.id)\
             .filter(YEAR == func.year(current_time), MONTH == func.month(current_time), Remainders.id_user.in_(filter_users))\
+            .all()
+    elif option == 'all':
+        return db.query(Remainders.id, Remainders.description, Remainders.frecuency, Remainders.id_user, User.name.label('user'), RemindersDetail.reminder_id, RemindersDetail.id.label('detail_id') ,RemindersDetail.date_time, RemindersDetail.status)\
+            .outerjoin(RemindersDetail, Remainders.id == RemindersDetail.reminder_id)\
+            .join(User, Remainders.id_user == User.id)\
+            .filter(YEAR == func.year(current_time), RemindersDetail.reminder_id == reminders_id, Remainders.id_user.in_(filter_users))\
             .all()
 
     
