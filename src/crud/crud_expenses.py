@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy.sql import func, text
+from sqlalchemy.sql import func
 from sqlalchemy import and_
 from typing import List, Tuple
 from datetime import datetime
@@ -12,11 +12,12 @@ from ..crud import crud_user
 YEAR = func.year(Expenses.real_date)
 MONTH = func.month(Expenses.real_date)
 current_time = datetime.now()
+REAL_DATE = func.date_format(Expenses.real_date, '%m-%d-%Y').label('real_date')
 
 
 def get_by_expenses(db: Session, expenses_id: int):
     # return db.query(Expenses).filter(Expenses.id == expenses_id).first()
-    return db.query(Expenses.id, Expenses.amount, Expenses.date_register, Expenses.id_category, Expenses.id_user, Category.description.label('category'), Expenses.comment, Expenses.real_date)\
+    return db.query(Expenses.id, Expenses.amount, Expenses.date_register, Expenses.id_category, Expenses.id_user, Category.description.label('category'), Expenses.comment, REAL_DATE)\
         .join(Category, Expenses.id_category == Category.id)\
         .filter(Expenses.id == expenses_id).first()
 
@@ -24,13 +25,13 @@ def get_by_expenses(db: Session, expenses_id: int):
 def get_expenses(db: Session, skip: int = 0, limit: int = 25, id_user: int = 0, download: str = ''):
     filter_users = crud_user.get_related_users(db, id_user)
     if download == 'xls':
-        return db.query(User.name.label('User'), Category.description.label('Category'), Expenses.amount, Expenses.comment, Expenses.date_register, Expenses.real_date)\
+        return db.query(User.name.label('User'), Category.description.label('Category'), Expenses.amount, Expenses.comment, Expenses.date_register, REAL_DATE)\
             .join(User, Expenses.id_user == User.id)\
             .join(Category, Expenses.id_category == Category.id)\
             .filter(Expenses.id_user.in_(filter_users))\
             .order_by(Expenses.real_date.desc()).all()
     else:
-        return db.query(Expenses.id, Expenses.amount, Expenses.date_register, Expenses.id_category, Expenses.real_date, Expenses.comment, Expenses.id_user, User.type, User.name.label('user'), Category.description.label('category'))\
+        return db.query(Expenses.id, Expenses.amount, Expenses.date_register, Expenses.id_category, REAL_DATE, Expenses.comment, Expenses.id_user, User.type, User.name.label('user'), Category.description.label('category'))\
             .join(User, Expenses.id_user == User.id)\
             .join(Category, Expenses.id_category == Category.id)\
             .filter(Expenses.id_user.in_(filter_users))\
@@ -39,12 +40,16 @@ def get_expenses(db: Session, skip: int = 0, limit: int = 25, id_user: int = 0, 
 
 def create_expenses(db: Session, expenses: schemas_expenses.Expenses, id_user=int):
     db_expenses = Expenses(amount=expenses.amount, real_date=expenses.real_date,
-                           comment=expenses.comment, id_category=expenses.id_category, id_user=id_user)
-    db.add(db_expenses)
-    db.commit()
-    db.refresh(db_expenses)
+                        comment=expenses.comment, id_category=expenses.id_category, id_user=id_user)
+    try:
+        db.add(db_expenses)
+        db.commit()
+        db.refresh(db_expenses)
+    except:
+        db.rollback()
+        raise   
     return db_expenses
-
+    
 
 def delete_expenses(db: Session, expenses_id: int):
     row_count = db.query(Expenses).filter(Expenses.id == expenses_id).delete()
@@ -82,6 +87,10 @@ def get_total_expenses_annual(db: Session, id_user: int):
     return db.query(func.ifnull(func.sum(Expenses.amount), 0).label('total'))\
         .filter(YEAR == func.year(current_time), Expenses.id_user.in_(filter_users))\
         .first()
+
+def count_expenses(db:Session,id_user: int):
+    filter_users = crud_user.get_related_users(db, id_user)
+    return db.query(Expenses).filter(Expenses.id_user.in_(filter_users)).count()
 
 
 def get_expenses_by_category(db: Session, id_user: int):

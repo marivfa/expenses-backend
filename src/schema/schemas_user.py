@@ -16,7 +16,7 @@ class TypeEnum(str, Enum):
     delegate = 'delegate'
 
 class User(UserBase):
-    id : int
+    id : int | None
     name : str
     email : str
     active : ActiveEnum

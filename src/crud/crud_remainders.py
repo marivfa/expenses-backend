@@ -65,14 +65,22 @@ def delete_remainders(db:Session, remainders_id: int):
     return row_count
 
 def update_remainders(db: Session, remainders_id: int, remainder: schemas_remainders.Remainders):
-    db_remainder = db.query(Remainders).filter(Remainders.id == remainders_id).first()
-    db_remainder.description = remainder.description
-    db_remainder.frecuency = remainder.frecuency
-    db_remainder.until_date = remainder.until_date
-    db.add(db_remainder)
-    db.commit()
-    db.refresh(db_remainder)
-    return db_remainder
+    db.query(Remainders).filter(Remainders.id == remainders_id).update({"description": remainder.description,"frecuency":remainder.frecuency, "until_date":remainder.until_date})
+    try:
+        db.commit()
+        return db.query(Remainders).filter(Remainders.id == remainders_id).first()
+    except:
+        db.rollback()
+        raise 
+
+def update_remainders_detail(db: Session, id: int, detail: schemas_remainders.RemindersDetailUpdate):
+    db.query(RemindersDetail).filter(RemindersDetail.id == id).update({"status": detail.status})
+    try:
+        db.commit()
+        return db.query(RemindersDetail).filter(RemindersDetail.id == id).first()
+    except:
+        db.rollback()
+        raise 
 
 #Dashboard
 def get_reminders_detail(db: Session, id_user = int, option = str, reminders_id = int):
@@ -109,8 +117,6 @@ def get_reminders_detail(db: Session, id_user = int, option = str, reminders_id 
             .join(User, Remainders.id_user == User.id)\
             .filter(YEAR == func.year(current_time), RemindersDetail.reminder_id == reminders_id, Remainders.id_user.in_(filter_users))\
             .all()
-
-    
 
 def count_remainders(db:Session,id_user: int):
     current_time = datetime.now()

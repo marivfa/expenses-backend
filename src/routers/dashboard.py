@@ -14,12 +14,12 @@ router = APIRouter(
 
 @router.get("/resumen")
 async def get_expenses_resume(db: Session = Depends(get_db), id_user: int = Depends(get_current_user)):
-    response = {"avg_monthly": 0, "total_annual": 0, "count_remainders":0,"expenses_monthly":0}
+    response = {"avg_monthly": 0, "total_annual": 0, "count_remainders":0,"expenses_monthly":0, "count_expenses":0}
     db_exp_monthly = crud_expenses.get_expenses_monthly(db, id_user)
-    print(db_exp_monthly)
     db_exp_avg = crud_expenses.get_expenses_avg(db,id_user)
     db_exp_total = crud_expenses.get_total_expenses_annual(db,id_user)
     db_rem_count = crud_remainders.count_remainders(db,id_user)
+    db_exp_count = crud_expenses.count_expenses(db, id_user)
     if db_exp_avg: 
         response.update({"avg_monthly": db_exp_avg.average})
     if db_exp_monthly:
@@ -28,6 +28,8 @@ async def get_expenses_resume(db: Session = Depends(get_db), id_user: int = Depe
         response.update({"total_annual": db_exp_total.total})
     if db_rem_count:
         response.update({"count_remainders": db_rem_count})
+    if db_exp_count:
+        response.update({"count_expenses": db_exp_count})
     return response
 
 @router.get("/by_month")

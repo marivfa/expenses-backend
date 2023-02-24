@@ -40,3 +40,6 @@ class RemindersDetail(RemaindersDetailBase):
     reminder_id : int
     status : str | None
     date_time : date
+
+class RemindersDetailUpdate(RemaindersDetailBase):
+    status : str

@@ -21,8 +21,10 @@ async def create_category(category: schemas_category.Category, db: Session = Dep
 
 @router.get("/", response_model=List[schemas_category.CategoryList])
 async def get_category(db: Session = Depends(get_db), id_user: int = Depends(get_current_user)):
-    category = crud_category.get_category(db, id_user = id_user)
-    return category
+    db_category = crud_category.get_category(db, id_user = id_user)
+    if db_category is None:
+        raise HTTPException(status_code=404, detail="Category Not found")
+    return db_category
 
 @router.get("/{category_id}", response_model=schemas_category.Category)
 async def get_by_category(category_id: int, db: Session = Depends(get_db)):

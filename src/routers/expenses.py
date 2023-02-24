@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi_pagination import LimitOffsetPage, add_pagination, paginate
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 import pandas as pd
 import os
 
@@ -23,11 +24,17 @@ router = APIRouter(
 ##Expenses
 @router.post("/", status_code=201 ,response_model=schemas_expenses.Expenses)
 async def create_expenses(expenses: schemas_expenses.Expenses, db: Session = Depends(get_db), id_user: int = Depends(get_current_user)):
-    db_expenses = crud_expenses.create_expenses(db=db, expenses=expenses, id_user = id_user)
-    if expenses.remainders is not None:
-        crud_remainders.create_remainders(db=db, remainders=expenses.remainders)
-    return db_expenses
+    try:
+        db_expenses = crud_expenses.create_expenses(db=db, expenses=expenses, id_user = id_user)
+        if expenses.remainders is not None:
+            crud_remainders.create_remainders(db=db, remainders=expenses.remainders)
+        return db_expenses
+    except IntegrityError as e:
+        raise HTTPException(status_code=400, detail="Invalid input data")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error")
 
+    
 @router.get("/", response_model=LimitOffsetPage[schemas_expenses.ExpensesList])
 async def get_expenses(skip: int = 0, limit: int = 25, db: Session = Depends(get_db), id_user: int = Depends(get_current_user)):
     expenses = crud_expenses.get_expenses(db, skip= skip, limit=limit, id_user = id_user)

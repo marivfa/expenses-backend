@@ -26,7 +26,7 @@ class ExpensesList(ExpensesBase):
     id_user : int
     id_category : int
     
-    real_date : date | None
+    real_date : str | None
     comment: str | None
     category: str
     user: str
@@ -38,5 +38,5 @@ class ExpensesUpdate(ExpensesBase):
     id_user : int
     id_category : int
 
-    real_date : date | None
+    real_date : str | None
     comment: str | None

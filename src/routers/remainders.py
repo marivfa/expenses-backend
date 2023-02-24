@@ -1,3 +1,4 @@
+from urllib import response
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_pagination import LimitOffsetPage, add_pagination, paginate
 from sqlalchemy.orm import Session
@@ -57,8 +58,18 @@ async def delete_remainders(remainders_id: int, db: Session = Depends(get_db)):
        message = "Error deleting Row"    
     return {"detail": message}
 
+@router.put("/detail/{id}", response_model=schemas_remainders.RemindersDetail)
+async def update_remainders(id: int, detail: schemas_remainders.RemindersDetailUpdate, db: Session = Depends(get_db)):
+    db_detail = crud_remainders.update_remainders_detail(db, id=id, detail = detail)
+    if db_detail is None:
+        raise HTTPException(status_code=404, detail="Reminder detail Not found")
+    return db_detail
+
+
 @router.put("/{remainders_id}",response_model=schemas_remainders.Remainders)
 async def update_remainders(remainders_id: int, remainder: schemas_remainders.Remainders, db: Session = Depends(get_db)):
     db_remainders = crud_remainders.update_remainders(db, remainders_id=remainders_id, remainder = remainder)
+    if db_remainders is None:
+        raise HTTPException(status_code=404, detail="Reminder Not found")
     return db_remainders
 
