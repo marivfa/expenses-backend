@@ -1,0 +1,11 @@
+uvicorn
+fastapi
+fastapi-pagination
+pandas
+alembic
+requests
+python-dotenv
+python-jose
+mysql-connector-python
+mysqlclient
+Boto3
